@@ -1,13 +1,15 @@
-CRITICAL 2015-03-10 23:59:14,254:  start programstalta.py: sta/lta event detection
-CRITICAL 2015-03-10 23:59:14,254:  local version: 2.70
-INFO 2015-03-10 23:59:14,254:  logging to: peterlog  mode: wb
-INFO 2015-03-10 23:59:14,254:  iomode = virtual
-INFO 2015-03-10 23:59:14,254:  file: 'stalta.sac'
-INFO 2015-03-10 23:59:14,254:    path: ''
-INFO 2015-03-10 23:59:14,258:    starttime Mon Mar 17 13:15:14 2014
-INFO 2015-03-10 23:59:14,258:    dt: 0.010  sps: 100.00  t0: 1395062115.0
-INFO 2015-03-10 23:59:14,258:    Nsta: 150  Nlta: 15000
-INFO 2015-03-10 23:59:14,258:    Tsta: 1.5  Tlta: 150.0  Tthr: 5.0  Dthr: 1.5
-INFO 2015-03-10 23:59:14,258:    sps: 100.000  Fdesens: 300.0
-INFO 2015-03-10 23:59:14,258:  first sample time: 13:15:14.99
-INFO 2015-03-10 23:59:16,672:  test start  time: 13:17:44.98  sample: 15000
+CRITICAL 2015-03-11 00:35:24,612:  start programstalta.py: sta/lta event detection
+CRITICAL 2015-03-11 00:35:24,612:  local version: 2.70
+INFO 2015-03-11 00:35:24,612:  logging to: peterlog  mode: wb
+INFO 2015-03-11 00:35:24,612:  iomode = virtual
+INFO 2015-03-11 00:35:24,612:  file: 'stalta.sac'
+INFO 2015-03-11 00:35:24,613:    path: ''
+INFO 2015-03-11 00:35:24,616:    starttime Tue Mar 18 20:15:14 2014
+INFO 2015-03-11 00:35:24,616:    dt: 0.010  sps: 100.00  t0: 1395173715.0
+INFO 2015-03-11 00:35:24,616:    Nsta: 150  Nlta: 15000
+INFO 2015-03-11 00:35:24,616:    Tsta: 1.5  Tlta: 150.0  Tthr: 5.0  Dthr: 1.5
+INFO 2015-03-11 00:35:24,616:    sps: 100.000  Fdesens: 300.0
+INFO 2015-03-11 00:35:24,616:  first sample time: 20:15:14.99
+INFO 2015-03-11 00:35:27,048:  test start  time: 20:17:44.98  sample: 15000
+INFO 2015-03-11 00:35:31,087:  trigger[1] at 20:21:35.16
+INFO 2015-03-11 00:35:31,838:      event 42.33 sec   retrig 233   rmax 12.61
