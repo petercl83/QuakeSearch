@@ -1,0 +1,32 @@
+Strategy 1
+==========
+SPECTRASEARCH--(zone,triggertimes)
+
+(times),(picktimes)-->removeteleseismic-->[picktimes 2]
+
+
+STEPS
+=====
+build getcatalog X
+
+build traveltime, check with Allplots X
+
+build simple filter for amplitudes only X
+experiment with locations & amplitudes X
+add progressively better filters X
+
+build splitter 
+
+modify spectrasearch
+
+
+NOTES
+=====
+station lat/lon found in stats
+
+events object only has indication#
+
+epicentral distance: from obspy.core.utils.geodetics import gps2DistAzimuth (meters)
+
+Check out: Probabilistic Power Density, Time Frequency Misfit, Cross Correlation Pick Correction
+

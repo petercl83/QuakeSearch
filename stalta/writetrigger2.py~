@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 13 11:17:23 2014
+
+@author: plin976
+"""
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+import obspy.signal
+from wrapperfun import*
+from programstalta import*
+
+#CHANGABLE SETTINGS
+timesfile='trigger'
+startUTC=UTCDateTime(2014,3,28,22,18,0)
+downloadhours=4  #This sets the number of hours downloaded in a single sac file
+cycles=30*6 #This sets the number of sac files to be downloaded in quake search3
+T='5'
+D='2'
+station="WIZ"
+channel="Z"
+#startUTC=UTCDateTime(2014,1,1,0,0,0) #Noise
+#startUTC=UTCDateTime(swarmUTC[0])-1800 #quakes
+
+for i in range(0,cycles):
+    logtimes=[]
+    sampleUTC=startUTC+i*60**2*downloadhours
+    stream=GetStreamFDSN(station,channel,sampleUTC,downloadhours*60**2)
+    logtimes=FindTriggers(stream,sampleUTC,T,D)
+    WriteTriggers(logtimes,timesfile)

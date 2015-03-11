@@ -1,0 +1,37 @@
+'''
+PROGRAM FOR READING IN TRIGGER TIMES FROM A TEXT FILE AND PLOTTING
+THE TIME SERIES, SPECTROGRAM, AND FT OF THESE TIMES. GIVES AN OPTION
+TO SAVE CERTAIN EVENTS TO A NEW TEXT FILE
+'''
+from numpy import* 
+import matplotlib.pyplot as plt
+from obspy import UTCDateTime
+from obspy.fdsn import Client
+from obspy import Stream
+from obspy import Trace
+import obspy.signal
+from petfun import*
+
+
+#Frequently Changed Settings
+rawtriggerfile='picks_stalta_Jan/ShortDur'
+teleseismicfile='Pick-teleseismic'
+siftedtriggerfile='picks_stalta_Jan/ShortDurLocal'
+
+#Load Data
+rawtriggers=ReadTriggers(rawtriggerfile)
+teleseismics=ReadTriggers(teleseismicfile)
+
+siftedtriggers=[]
+for rawtrigger in rawtriggers:
+    catch=False
+    for teleseismic in teleseismics:
+        print abs(rawtrigger-teleseismic)
+        if abs(rawtrigger-teleseismic)<=12:
+            catch=True
+            break
+    if catch==False:
+        siftedtriggers.append(rawtrigger)
+
+siftedlogtimes=UTC2LogTime(siftedtriggers)
+WriteTriggers(siftedlogtimes,siftedtriggerfile)

@@ -1,0 +1,13 @@
+CRITICAL 2015-03-10 23:59:14,254:  start programstalta.py: sta/lta event detection
+CRITICAL 2015-03-10 23:59:14,254:  local version: 2.70
+INFO 2015-03-10 23:59:14,254:  logging to: peterlog  mode: wb
+INFO 2015-03-10 23:59:14,254:  iomode = virtual
+INFO 2015-03-10 23:59:14,254:  file: 'stalta.sac'
+INFO 2015-03-10 23:59:14,254:    path: ''
+INFO 2015-03-10 23:59:14,258:    starttime Mon Mar 17 13:15:14 2014
+INFO 2015-03-10 23:59:14,258:    dt: 0.010  sps: 100.00  t0: 1395062115.0
+INFO 2015-03-10 23:59:14,258:    Nsta: 150  Nlta: 15000
+INFO 2015-03-10 23:59:14,258:    Tsta: 1.5  Tlta: 150.0  Tthr: 5.0  Dthr: 1.5
+INFO 2015-03-10 23:59:14,258:    sps: 100.000  Fdesens: 300.0
+INFO 2015-03-10 23:59:14,258:  first sample time: 13:15:14.99
+INFO 2015-03-10 23:59:16,672:  test start  time: 13:17:44.98  sample: 15000

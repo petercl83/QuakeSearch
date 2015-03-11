@@ -1,0 +1,73 @@
+from obspy.fdsn import Client
+from obspy import UTCDateTime
+from petfun import*
+import obspy.neries as ne
+
+
+#Changeable settings
+triggerfile='Pick-teleseismic'
+startUTC = UTCDateTime("2014-01-01")
+endUTC = UTCDateTime("2014-04-01")
+windowtime=300
+
+#WIZ station
+latWIZ=-37.524510539
+lonWIZ=177.189301882
+
+cat1=cat2=cat3=None
+arrivalUTC1=arrivalUTC2=arrivalUTC3=[]
+
+#Download Zone 1
+#################
+try:
+#    cat1=CatFilter(startUTC,endUTC,latWIZ,lonWIZ,0,30,5.5,6) #Doesn't really show up
+    cat1=CatFilter(startUTC,endUTC,latWIZ,lonWIZ,0,30,6,10) #Shows up well in Spect., Coda approx. 70s-120s
+#    cat1=CatFilter(startUTC,endUTC,latWIZ,lonWIZ,0,30,7,7.5)
+    results1,arrivalUTC1=FindArrivalTimes(cat1,latWIZ,lonWIZ)
+except:
+    print('no events in zone 1!')
+    arrivalUTC1=[]
+
+#Download Zone 2
+#################
+try:
+    cat2=CatFilter(startUTC,endUTC,latWIZ,lonWIZ,30,90,6.5,10) #not yet calibrated
+    results2,arrivalUTC2=FindArrivalTimes(cat2,latWIZ,lonWIZ)
+except:
+    print('no events in zone 2!')
+    arrivalUTC2=[]
+
+#Download Zone 3
+#################
+try:
+    cat3=CatFilter(startUTC,endUTC,latWIZ,lonWIZ,90,180,7.0,10) #...., Coda approx. -150
+    results3,arrivalUTC3=FindArrivalTimes(cat3,latWIZ,lonWIZ)
+except:
+    print('no events in zone 3!')
+    arrivalUTC3=[]
+
+arrivalUTC=arrivalUTC1+arrivalUTC2+arrivalUTC3
+logtimes=UTC2LogTime(arrivalUTC)
+WriteTriggers(logtimes,triggerfile)
+
+
+print(logtimes)
+
+
+'''
+if arrivaltimes!=[]:
+    #cat1.plot()
+    AllPlotsList(arrivaltimes,windowtime)
+'''
+
+''' #Compile list of travel times separated by event type
+arrivaltimes=[]
+for i in range(0,len(cat)):
+    results=ne.Client().getTravelTimes(latitude=177.189301882,longitude=-37.524510539,depth=depths[i],locations=[locations[i]],model='iasp91') #WIZ travel times
+    singleeventarrivaltimes=[]
+    for j in range(0,len(results[0])):
+        delaytime=results[0].items()[j][1]/1000 #/1000 converts from s to ms
+        singleeventarrivaltimes.append(picktimes[i]+delaytime)
+    arrivaltimes.append(singleeventarrivaltimes)
+'''
+    

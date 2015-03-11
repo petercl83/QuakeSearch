@@ -1,0 +1,47 @@
+from numpy import*
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+#from obspy.core import read
+import obspy.signal
+#import numpy as np
+#import matplotlib.pyplot as plt
+#import shlex,subprocess
+
+from petfun import*
+from wrapperfun import*
+from programstalta import*
+
+#Changable Settings
+triggerfile='trigger3'
+writefile='triggerlowfreq'
+
+#Download Reference Window
+station="WIZ"
+channel="Z"
+windowtimes=[100,90]
+reftime=UTCDateTime(2014,2,1,0,0,0)
+refst=CorrectInstrument(GetStreamFDSN(station,channel,reftime,windowtimes[0]))
+
+#Get list of trigger times (UTC)
+ref=open(triggerfile,'r')
+triggertimes=ref.readlines()
+triggersUTC=LogTime2UTC(triggertimes)
+ref.close()
+
+testst=0
+st3=0 
+fft=0
+corvalue=0
+
+for i in range(0,len(triggersUTC)):
+    lowfreqquakes=[]
+    testst=CorrectInstrument(GetStreamFDSN(station,channel,triggersUTC[i]-10,windowtimes[1]))
+    st3,fft,corvalue=CorrelateData(refst.copy(),testst.copy())
+    print(corvalue)
+    print(triggersUTC[i])
+    if corvalue[0]<.020: #corvalue<.022
+        lowfreqquakes.append(triggersUTC[i])
+        print('quake!')
+        logtimes=UTC2LogTime(lowfreqquakes)
+        WriteTriggers(logtimes,writefile)

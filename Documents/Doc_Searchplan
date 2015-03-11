@@ -1,0 +1,23 @@
+27-2-2014
+=========
+I compared picktimes from Jan-March 2014 from two sources: getcatalog.py and writetrigger.py.  In one case writetrigger caught an earthquake it shouldn't have, and in another case it did not catch a quake that it should have.  RUN program again using this times and pot to see what happened.
+
+
+
+
+Strategy 1
+==========
+SPECTRASEARCH--(zone,triggertimes)
+
+(times),(picktimes)-->removeteleseismic-->[picktimes 2]
+
+NOTES
+=====
+station lat/lon found in stats
+
+events object only has indication#
+
+epicentral distance: from obspy.core.utils.geodetics import gps2DistAzimuth (meters)
+
+Check out: Probabilistic Power Density, Time Frequency Misfit, Cross Correlation Pick Correction
+

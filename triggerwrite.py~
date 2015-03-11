@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 13 11:17:23 2014
+THIS PROGRAM USES THE STALTA PROGRAM TO SEARCHE THROUGH DOWNLOADED
+SEISMIC DATA AND WRITE TRIGGER TIMES TO A TEXT FILE
+@author: plin976
+"""
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+import obspy.signal
+from petfun import*
+
+#CHANGABLE SETTINGS
+#startUTC=UTCDateTime(2014,8,27,10,25,0) #MedDur/LowFreq
+#startUTC=UTCDateTime(2014,8,6,4,10,0) #LongDur/LowFreq
+#startUTC=UTCDateTime(2014,9,21,14,55) #LongDur/LowFreq2 (Higher Amplitude-Checked wtih Stalta.  It caught one good quake and one errata)
+startUTC=UTCDateTime(2014,8,6,20,15,0)
+
+downloaddays=1
+triggerfile='triggerSample' #Name of h5 file to store trigger times
+S=str(.25)   #Tsta- make this long to detect long duration events (180s for low-freq long-dur events)
+L=str(90)   #Tlta- by logic shoudld be >T*Tsta
+T='5'   #Trigger ratio
+D='2'   #Detrigger ratio
+F='50'   #Trigdsensetime
+P='30'   #Trigduration (minimum trigger duration)
+station="WIZ"
+channel="Z"
+
+#CONSTANT SETTINGS
+downloadhours=.5
+cycles=1
+#downloadhours=4  #This sets the number of hours downloaded in a single sac file
+#cycles=downloaddays*6 #This sets the number of sac files to be downloaded in quake search3
+
+def FindTriggers(stream3,startUTC,S,L,T,D,F,P): #Input: str, startUTC,trigger/detrigger threshholdd  Output: triggertimes in year:month:day:your:minute:second format
+    triggertimesYMD=[]
+    triggerdurationsfloat=[]
+    stream3.write('stalta.sac',format='SAC') #Writes sac file
+    main(["programstalta.py","-S",S,"-L",L,"-T",T,"-D",D,"-F",F,"-P",P,"-w","peterlog",'stalta.sac']) ##run stalta program which writes logfile
+    subprocess.call('rm stalta.sac', shell=True)
+    triggertimes,triggerdurations=ReadTriggerLog('peterlog')
+
+    print("LISTS",triggertimes,triggerdurations)
+
+    if triggertimes!=[]:
+        for i in range(0,len(triggertimes)):
+            year=str(startUTC.year)
+            month=str(startUTC.month)
+            day=str(startUTC.day)
+            if len(month)==1:
+                month='0'+month
+            if len(day)==1:
+                day='0'+day
+            triggertimesYMD.append(year+'-'+month+'-'+day+'T'+triggertimes[i])
+            triggerdurationsfloat.append(float(triggerdurations[i]))
+    return triggertimesYMD,triggerdurationsfloat
+
+def ReadTriggerLog(filename): #Input: filename of stalta program log file;   Output: list of triggertimes (H:M:S)
+    ref=open(filename,'r')
+    linesskipped=13
+    for i in range(0,linesskipped):
+        ref.readline()
+    entries=ref.read().split()
+    ref.close()
+    print('ENTRIES',entries)
+    eventnum=(len(entries)-25)/16
+    print("EVENTNUM",eventnum)
+    triggertimes=[]
+    triggerdurations=[]
+    for i in range(0,eventnum):
+        triggertimes.append(entries[5+21*i])
+        triggerdurations.append(entries[10+21*i])
+    return triggertimes,triggerdurations
+    
+
+j=0
+for i in range(0,cycles):
+    logtimes=[]
+    sampleUTC=startUTC+j*60**2*downloadhours
+    try: stream=GetProcessStreamJava(station,channel,sampleUTC,downloadhours*60**2)
+    except:
+        print('Could not load data!')
+    if stream!=0:
+        stream.detrend()
+        stream.plot()
+        logtimes,durations=FindTriggers(stream,sampleUTC,S,L,T,D,F,P)
+        print(durations)
+        WriteTriggers(logtimes,triggerfile)
+        j+=1

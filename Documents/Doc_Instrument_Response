@@ -1,0 +1,35 @@
+         network: NZ
+         station: WIZ
+        location: 10
+         channel: HHZ
+       starttime: 2014-08-06T04:20:02.433098Z
+         endtime: 2014-08-06T04:30:05.113098Z
+   sampling_rate: 100.0
+           delta: 0.01
+            npts: 60269
+           calib: 1.0
+         _format: MSEED
+           mseed: AttribDict({'record_length': 512, 'encoding': 'STEIM2', 'filesize': 89088L, 'dataquality': 'D', 'number_of_records': 174L, 'byteorder': '>'})
+      processing: ['detrend:simple:{}']
+        response: Channel Response
+	From M/S (None) to None (None)
+	Overall Sensitivity: 8.38861e+08 defined at 1.000 Hz
+	3 stages:
+		Stage 1: PolesZerosResponseStage from M/S to V, gain: 1999.45
+		Stage 2: CoefficientsTypeResponseStage from V to COUNTS, gain: 419430.00
+		Stage 3: FIRResponseStage from COUNTS to COUNTS, gain: 1.00
+
+From Geonet (SEED):
+B053F07     A0 normalization factor:               2.30426E+06  (In obspy they call this "gain")
+B053F08     Normalization frequency:               1
+
+
+From Geonet (SAC):
+ZEROS 3
+POLES 5
+-0.0740  0.0740
+-0.0740  -0.0740
+-1130.9724  0.0000
+-1005.3088  0.0000
+-502.6544  0.0000
+CONSTANT 4.794684e+17

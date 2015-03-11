@@ -1,0 +1,43 @@
+from numpy import*
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+#from obspy.core import read
+import obspy.signal
+#import numpy as np
+#import matplotlib.pyplot as plt
+#import shlex,subprocess
+
+from petfun import*
+from wrapperfun import*
+
+#Changable Settings
+triggerfile='triggerfluidquakes3'
+writefile='triggerfluidquakes4'
+
+#Constant Settings
+station='WIZ'
+channel='Z'
+windowtime=720
+
+#Get list of trigger times (UTC)
+ref=open(triggerfile,'r')
+triggertimes=ref.readlines()
+triggersUTC=LogTime2UTC(triggertimes)
+ref.close()
+
+testst=0
+for i in range(0,len(triggersUTC)):
+    triggeraddUTC=[]
+    testst=GetStreamJava(station,channel,triggersUTC[i]-180,windowtime)
+    testst2=CorrectInstrument(testst.copy())
+
+    testst2.spectrogram()
+    testst2.plot()
+
+    if raw_input("Keep Quake? (y/n) ")=='y':
+        triggeraddUTC.append(triggersUTC[i])
+        logtimes=UTC2LogTime(triggeraddUTC)
+        WriteTriggers(logtimes,writefile)
+        if raw_input("Write to sac file? (y/n) ")=='y':
+            filename=GetSacFileJava(station,channel,triggersUTC[i]-180,windowtime) #filename dummy

@@ -1,0 +1,155 @@
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+from obspy.fdsn import Client
+from obspy.core import read
+import obspy.signal
+import numpy as np
+import matplotlib.pyplot as plt
+import shlex,subprocess
+import sys
+
+global polesandzeros
+
+def ReadLine(filename,skipped): #opens "filename," skips lines, and returns the next line as an output list
+    ref=open(filename,"r")
+    for i in range(0,skipped):
+        ref.readline()
+    return ref.readline()
+    ref.close()
+
+#Reads a file, skipps lines and entries, and then reads #entriesread
+def ReadEntries(filename,linesskipped,entriesskipped,entriesread): #opens "filename", skips lines and entries, and reads #entriesread
+    ref=open(filename,"r")
+    for i in range(0,linesskipped):
+        ref.readline()
+    entries=ref.read().split()
+    entries.reverse() 
+    for i in range(0,entriesskipped):
+        entries.pop()
+    entries.reverse()
+    for i in range(0,len(entries)-entriesread):
+        entries.pop()        
+    return entries
+    ref.close()
+
+def GetStreamFDSN(station,channel,startUTC,deltat):
+    endUTC=UTCDateTime(startUTC+deltat)
+    fdsn_client=Client(base_url="http://service.geonet.org.nz")
+    stream=fdsn_client.get_waveforms("NZ",station,"10","HH"+channel,startUTC,endUTC,attach_response=True)
+    #stream.detrend('constant')
+    return stream
+
+def GetStreamJava(station,channel,startUTC,deltat):
+    starttime=UTCtoJava(startUTC)
+    filename="test"
+    stream="test"
+    if len(station)==3:
+        subprocess.call('java -jar GeoNetCWBQuery-4.2.0-bin.jar -s "NZ'+station+'  HH'+channel+'10" -b "'+starttime+'" -d '+str(deltat)+' -t sac', shell=True)
+        stream='java -jar GeoNetCWBQuery-4.2.0-bin.jar -s "NZ'+station+'  HH'+channel+'10" -b "'+starttime+'" -d '+str(deltat)+' -t sac'
+        filename='NZ'+station+'__HH'+channel+'10.sac'
+    if len(station)==4:
+        subprocess.call('java -jar GeoNetCWBQuery-4.2.0-bin.jar -s "NZ'+station+' HH'+channel+'10" -b "'+starttime+'" -d '+str(deltat)+' -t sac', shell=True)
+        filename='NZ'+station+'_HH'+channel+'10.sac'
+    stream=read(filename, format="SAC")
+    subprocess.call('rm '+filename, shell=True)
+    return stream
+
+def UTCtoJava(UTC):
+    month=str(UTC.month)
+    day=str(UTC.day)
+    hour=str(UTC.hour)
+    minute=str(UTC.minute)    
+    second=str(UTC.second)    
+    if len(month)==1:
+        month='0'+month
+    if len(day)==1:
+        day='0'+day
+    if len(minute)==1:
+        minute='0'+minute
+    if len(second)==1:
+        second='0'+second
+    JavaTime=str(UTC.year)+'/'+month+'/'+day+' '+hour+':'+minute+':'+second
+    return JavaTime
+
+def GetSacFileJava(station,channel,startUTC,deltat): #Ouput: writes sac file and returns file name
+    starttime=UTCtoJava(startUTC)
+    if len(station)==3:
+        subprocess.call('java -jar GeoNetCWBQuery-4.2.0-bin.jar -s "NZ'+station+'  HH'+channel+'10" -b "'+starttime+'" -d '+str(deltat)+' -t sac', shell=True)
+        filename='NZ'+station+'__HH'+channel+'10.sac'
+    if len(station)==4:
+        subprocess.call('java -jar GeoNetCWBQuery-4.2.0-bin.jar -s "NZ'+station+' HH'+channel+'10" -b "'+starttime+'" -d '+str(deltat)+' -t sac', shell=True)
+        filename='NZ'+station+'_HH'+channel+'10.sac'
+    return filename
+
+def RealFFT(tr):
+    t = np.arange(0, tr.stats.npts / tr.stats.sampling_rate, tr.stats.delta)
+    sp = np.fft.rfft(tr.data)
+    freq = np.fft.rfftfreq(t.shape[-1],1/tr.stats.sampling_rate) 
+    return freq, abs(sp)
+
+def PlotStream(st):
+    st.sort(['starttime']) #Sort by start time.  This each trace for a single even by start time, which is necessary for plotting the data if you don't plot using obspy.
+    #st.spectrogram()
+    dt=st[0].stats.starttime.timestamp
+    f, axarr=plt.subplots(len(st))
+    for j in range(0,len(st)):
+        t2=np.linspace(st[j].stats.starttime.timestamp-dt, st[j].stats.endtime.timestamp-dt, st[j].stats.npts)
+        axarr[j].plot(t2,st[j].data,'k')
+
+def PlotTrace(tr):
+    dt=tr.stats.starttime.timestamp
+    t=np.arange(0,tr.stats.npts/tr.stats.sampling_rate,tr.stats.delta)
+    plt.plot(t,tr.data,'k')
+
+def CorrectInstrument(st):
+    polesandzeros = {
+        'poles': [-1.178e-2 + 1.178e-2j, -1.178e-2 - -1.178e-2j, -1.8e+2 + 0j,
+                  -1.6e+2 - 0j, -8e1 + 0j],
+        'zeros': [0j, 0j],
+        'gain': 2000.0,
+        'sensitivity': 1000} #default: 2516778400.0
+    global polesandzeros
+
+    for i in range(0,len(st)):
+        st[i]=st[i].simulate(paz_remove=polesandzeros)
+        return st
+        
+def CreateTrace(freq,data):        
+    trace = Trace()
+    trace.data = data
+    trace.stats.sampling_rate = (len(freq)-1)/freq[len(freq)-1]
+    return trace
+
+def Envelope(tr):
+    tr.filter('bandpass', freqmin=0, freqmax=1, corners=2, zerophase=True)
+    envelope = obspy.signal.filter.envelope(tr.data)
+    return envelope
+
+def ProcessData(st): #input: stream, output: trace, freq list and smoothed FFT
+    tr=st[0]
+    freq,amp=RealFFT(tr)
+    fftrace=CreateTrace(freq,amp)
+    envelope=Envelope(fftrace)
+    fftrace2=CreateTrace(freq,envelope)
+    fftrace2.data=fftrace2.data/(fftrace2.integrate().max()) #optimise
+    return tr, freq, fftrace2
+
+def CorrelateData(st1,st2): #takes streams and outputs corrected stream, two FFTs and their product, and correlation value
+    tr1, freq1, fft1=ProcessData(st1)
+    tr2, freq2, fft2=ProcessData(st2)
+    productdata=np.lib.pad(fft2.data,(0,len(fft1.data)-len(fft2.data)),'constant',constant_values=(0,0))
+    product=CreateTrace(freq1, fft1.data*productdata)
+    st3=Stream(traces=[tr1,tr2])
+    fft=Stream(traces=[fft1,fft2,product])
+    fftproduct=Stream(traces=[product])
+    corvalue=fftproduct.copy().integrate().max()
+    return st3,fft,corvalue
+
+#def main():
+    #print(ReadLine('peterlog',3))
+    triggertimes=ReadTrigger('peterlog')
+    print(triggertimes)
+
+#if __name__ == "__main__":
+#    sys.exit(main())

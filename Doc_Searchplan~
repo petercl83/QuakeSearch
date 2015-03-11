@@ -1,0 +1,40 @@
+SPECTRASEARCH-->[starttime,stoptime]-->getcatalog-->[events]-->filtered-->[events]-->traveltime-->[times]
+
+Strategy 1
+==========
+SPECTRASEARCH--(triggertimes)
+
+(times),(picktimes)-->removeteleseismic-->[picktimes 2]
+
+
+
+Strategy 2
+==========
+[times],[stream]-->splitter-->[streams]-->SPECTRASEARCH-->(triggertimes)
+
+
+STEPS
+=====
+build getcatalog
+
+build traveltime, check with Allplots
+
+build simple filter for amplitudes only
+experiment with locations & amplitudes
+add progressively better filters
+
+build splitter
+
+modify spectrasearch
+
+
+NOTES
+=====
+station lat/lon found in stats
+
+events object only has indication#
+
+epicentral distance: from obspy.core.utils.geodetics import gps2DistAzimuth (meters)
+
+Check out: Probabilistic Power Density, Time Frequency Misfit, Cross Correlation Pick Correction
+

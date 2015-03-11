@@ -1,0 +1,95 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 13 11:17:23 2014
+
+@author: plin976
+"""
+from obspy import UTCDateTime
+from obspy import Stream
+from obspy import Trace
+from obspy.core import read
+import obspy.signal
+import numpy as np
+import matplotlib.pyplot as plt
+import shlex,subprocess
+
+from petfun import*
+from programstalta import*
+
+def FindTriggers(stream3,startUTC,T,D): #Input: str, startUTC,trigger/detrigger threshholdd  Output: triggertimes in year:month:day:your:minute:second 
+    triggertimesYMD=[]
+    stream3.write('stalta.sac',format='SAC') #Writes sac file
+    main(["programstalta.py","-T",T,"-D",D,"-w","peterlog",'stalta.sac']) ##run stalta program which writes logfile
+    subprocess.call('rm stalta.sac', shell=True)
+    triggertimes=ReadTriggers('peterlog')
+    if triggertimes!=[]:
+        for i in range(0,len(triggertimes)):
+            year=str(startUTC.year)
+            month=str(startUTC.month)
+            day=str(startUTC.day)
+            if len(month)==1:
+                month='0'+month
+            if len(day)==1:
+                day='0'+day
+            triggertimesYMD.append(year+':'+month+':'+day+':'+triggertimes[i])
+    return triggertimesYMD
+
+def ReadTriggers(filename):
+    ref=open(filename,'r')
+    linesskipped=13
+    for i in range(0,linesskipped):
+        ref.readline()
+    entries=ref.read().split()
+    eventnum=len(entries)/21-1
+    triggertimes=[]
+    for i in range(0,eventnum):
+        triggertimes.append(entries[5+21*i])
+    return triggertimes
+    ref.close()
+
+def WriteTriggers(list,filename):
+    lines=''
+    for i in range(0,len(list)):
+        lines=lines+list[i]+'\n'
+    ref=open(filename,'a')
+    ref.writelines(lines)
+    ref.close()
+
+def LogTime2UTC(times): #Input: list of LogTimes   Output: list of UTCs
+    timesUTC=[]
+    for i in range(0,len(times)):
+        string=times[i]
+        year=int(string[0:4])
+        month=int(string[5:7])
+        day=int(string[8:10])
+        hour=int(string[11:13])
+        minute=int(string[14:16])
+        second=int(string[17:19])
+        timesUTC.append(UTCDateTime(year,month,day,hour,minute,second))
+    return timesUTC
+
+def UTC2LogTime(times): #Input: list of UTCs     Output: list of logtimes
+    print("working!")
+    LogTimes=[]
+    for i in range(0,len(times)):
+        UTC=times[i]
+        year=str(UTC.year)
+        month=str(UTC.month)
+        day=str(UTC.day)
+        hour=str(UTC.hour)
+        minute=str(UTC.minute)
+        second=str(UTC.second)
+        if len(month)==1:
+            month='0'+month
+        if len(day)==1:
+            day='0'+day
+        if len(hour)==1:
+            hour='0'+hour
+        if len(minute)==1:
+            minute='0'+minute
+        if len(second)==1:
+            second='0'+second
+        LogTimes.append(year+':'+month+':'+day+':'+hour+':'+minute+':'+second)
+        print(LogTimes[i])
+    return LogTimes
+#Pick approx 17000s
